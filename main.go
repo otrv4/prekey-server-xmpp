@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -12,9 +13,10 @@ import (
 func main() {
 	flag.Parse()
 
-	// TODO: validate fingerprint
-	// TODO: validate xmppName
-	// TODO: validate shared secret
+	if e := validateArguments(); e != nil {
+		fmt.Printf("%v\n", e)
+		return
+	}
 
 	opts := xco.Options{
 		Name:         *xmppName,
@@ -24,53 +26,17 @@ func main() {
 
 	c, err := xco.NewComponent(opts)
 	if err != nil {
-		// TODO: print error properly
-		panic(err)
+		fmt.Printf("error when connecting to server: %v\n", err)
+		return
 	}
 
-	c.MessageHandler = func(_ *xco.Component, m *xco.Message) error {
-		res := getPrekeyResponseFromRealServer(fmt.Sprintf("%s@%s", m.Header.From.LocalPart, m.Header.From.DomainPart), []byte(m.Body))
-		resp := xco.Message{
-			Header: xco.Header{
-				From: m.To,
-				To:   m.From,
-				ID:   m.ID,
-			},
-			Type:    m.Type,
-			Body:    string(res),
-			XMLName: m.XMLName,
-		}
+	c.MessageHandler = messageHandler
+	c.IqHandler = iqHandler
 
-		c.Send(&resp)
-		// TODO: print error properly
-
-		return nil
-	}
-
-	c.IqHandler = func(_ *xco.Component, m *xco.Iq) error {
-		ret, _, _ := processIQ(m)
-		// TODO: print error properly
-		resp := xco.Iq{
-			Header: xco.Header{
-				From: m.To,
-				To:   m.From,
-				ID:   m.ID,
-			},
-			Type:    "result",
-			Content: xmlToString(ret),
-			XMLName: m.XMLName,
-		}
-
-		c.Send(&resp)
-		// TODO: print error properly
-
-		return nil
-	}
-
-	e := c.Run()
-	if e != nil {
-		// TODO: print error properly
-		panic(e)
+	err = c.Run()
+	if err != nil {
+		fmt.Printf("error when running component: %v\n", err)
+		return
 	}
 }
 
@@ -83,10 +49,12 @@ func getTCPAddr(ip string, port uint) *net.TCPAddr {
 	return addr
 }
 
-func getPrekeyResponseFromRealServer(u string, data []byte) []byte {
+func getPrekeyResponseFromRealServer(u string, data []byte) ([]byte, error) {
 	addr := getTCPAddr(*rawIP, *rawPort)
-	con, _ := net.DialTCP(addr.Network(), nil, addr)
-	// TODO: print error properly
+	con, e := net.DialTCP(addr.Network(), nil, addr)
+	if e != nil {
+		return nil, e
+	}
 	defer con.Close()
 
 	toSend := []byte{}
@@ -94,15 +62,17 @@ func getPrekeyResponseFromRealServer(u string, data []byte) []byte {
 	toSend = append(toSend, []byte(u)...)
 	toSend = appendShort(toSend, uint16(len(data)))
 	toSend = append(toSend, data...)
-	con.Write(toSend)
-	// TODO: print error properly
-	con.CloseWrite()
-	res, _ := ioutil.ReadAll(con)
-	// TODO: print error properly
-	res2, ss, _ := extractShort(res)
-	if uint16(len(res2)) != ss {
-		fmt.Printf("Unexpected length of data received\n")
-		return nil
+	if _, e = con.Write(toSend); e != nil {
+		return nil, e
 	}
-	return res2
+	con.CloseWrite()
+	res, e := ioutil.ReadAll(con)
+	if e != nil {
+		return nil, e
+	}
+	res2, ss, ok := extractShort(res)
+	if !ok || uint16(len(res2)) != ss {
+		return nil, errors.New("unexpected length of data received")
+	}
+	return res2, nil
 }
