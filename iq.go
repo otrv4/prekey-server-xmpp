@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/xml"
 	"fmt"
 
 	xco "github.com/sheenobu/go-xco"
@@ -34,33 +35,71 @@ func processIQ(stanza *xco.Iq) (ret interface{}, iqtype string, ignore bool) {
 	return nil, "", false
 }
 
-func discoInfoIQ(_ *xco.Iq) (interface{}, string, bool) {
-	return DiscoveryInfoQuery{
-		Identities: []DiscoveryIdentity{
-			{
-				Category: "auth",
-				Type:     "otr-prekey",
-				Name:     "OTR Prekey Server",
+func discoInfoIQ(ii *xco.Iq) (interface{}, string, bool) {
+	q := &DiscoveryInfoQuery{}
+	e := xml.Unmarshal([]byte(ii.Content), q)
+	if e != nil {
+		return nil, "", true
+	}
+
+	if q.Node == "" {
+		return DiscoveryInfoQuery{
+			Identities: []DiscoveryIdentity{
+				{
+					Category: "auth",
+					Type:     "otr-prekey",
+					Name:     "OTR Prekey Server",
+				},
 			},
-		},
-		Features: []DiscoveryFeature{
-			{Var: "http://jabber.org/protocol/disco#info"},
-			{Var: "http://jabber.org/protocol/disco#items"},
-			{Var: "http://jabber.org/protocol/otrv4-prekey-server"},
-		},
-	}, "", false
+			Features: []DiscoveryFeature{
+				{Var: "http://jabber.org/protocol/disco#info"},
+				{Var: "http://jabber.org/protocol/disco#items"},
+				{Var: "http://jabber.org/protocol/otrv4-prekey-server"},
+			},
+		}, "", false
+	} else if q.Node == "fingerprint" {
+		return DiscoveryInfoQuery{
+			Node: q.Node,
+			Identities: []DiscoveryIdentity{
+				{
+					Category: "auth",
+					Type:     "otr-prekey",
+					Name:     *prekeyServerFingerprint,
+				},
+			},
+			Features: []DiscoveryFeature{
+				{Var: "http://jabber.org/protocol/disco#info"},
+				{Var: "http://jabber.org/protocol/disco#items"},
+				{Var: "http://jabber.org/protocol/otrv4-prekey-server"},
+			},
+		}, "", false
+	}
+	return DiscoveryItemsQuery{}, "", false
 }
 
-func discoItemsIQ(_ *xco.Iq) (interface{}, string, bool) {
-	return DiscoveryItemsQuery{
-		DiscoveryItems: []DiscoveryItem{
-			{
-				Jid:  *xmppName,
-				Node: "fingerprint",
-				Name: *prekeyServerFingerprint,
+func discoItemsIQ(ii *xco.Iq) (interface{}, string, bool) {
+	q := &DiscoveryItemsQuery{}
+	e := xml.Unmarshal([]byte(ii.Content), q)
+	if e != nil {
+		return nil, "", true
+	}
+	if q.Node == "" {
+		return DiscoveryItemsQuery{
+			DiscoveryItems: []DiscoveryItem{
+				{
+					Jid:  *xmppName,
+					Node: "fingerprint",
+					Name: *prekeyServerFingerprint,
+				},
 			},
-		},
-	}, "", false
+		}, "", false
+	} else if q.Node == "fingerprint" {
+		return DiscoveryItemsQuery{
+			Node:           q.Node,
+			DiscoveryItems: []DiscoveryItem{},
+		}, "", false
+	}
+	return DiscoveryItemsQuery{}, "", false
 }
 
 func init() {
