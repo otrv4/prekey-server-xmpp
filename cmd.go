@@ -14,7 +14,6 @@ var (
 	xmppSharedSecret        = flag.String("shared-secret", "changeme", "Shared secret for authenticating to the XMPP server")
 	xmppName                = flag.String("name", "changeme", "Name for the XMPP component. Usually something like prekeys.example.org")
 	prekeyServerFingerprint = flag.String("fingerprint", "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", "Fingerprint for the prekey server. This is expected to be 56 bytes expressed in hexadecimal - thus 112 digits")
-	validDomains            = flag.String("valid-domains", "", "A list of all domains that are valid for users, separated by commas. An empty list is equal to no restriction.")
 )
 
 func isFingerprint(name string) bool {
