@@ -38,5 +38,5 @@ type DiscoveryItem struct {
 	XMLName xml.Name `xml:"http://jabber.org/protocol/disco#items item"`
 	Jid     string   `xml:"jid,attr"`
 	Name    string   `xml:"name,attr"`
-	Node    string   `xml:"node, attr"`
+	Node    string   `xml:"node,attr"`
 }
