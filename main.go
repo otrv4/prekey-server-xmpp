@@ -70,6 +70,10 @@ func getPrekeyResponseFromRealServer(u string, data []byte) ([]byte, error) {
 	if e != nil {
 		return nil, e
 	}
+	if len(res) == 0 {
+		return nil, errors.New("server closed connection without sending any data - this probably happened because of a malformed request")
+	}
+
 	res2, ss, ok := extractShort(res)
 	if !ok || uint16(len(res2)) != ss {
 		return nil, errors.New("unexpected length of data received")
