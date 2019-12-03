@@ -1,0 +1,6 @@
+github.com/pkg/errors v0.8.0 h1:WdK/asTD0HN+q6hsWO3/vpuAkAr+tw6aNJNDFFf0+qw=
+github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/sheenobu/go-xco v0.0.0-20170503183122-20e894c4a59f h1:/NwSPAEngU1Ol/T0Xh3gSt8uHHxpa02H9BIMq95lBr8=
+github.com/sheenobu/go-xco v0.0.0-20170503183122-20e894c4a59f/go.mod h1:uUDxTUgpU060KSY/p/HECSQm6rOHoSZMurqVM5zGEZs=
+golang.org/x/net v0.0.0-20180712202826-d0887baf81f4 h1:KDF3PK6A+dkI7c4O8QbMtJqcXE3LdNJFGZECIlifQOg=
+golang.org/x/net v0.0.0-20180712202826-d0887baf81f4/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
