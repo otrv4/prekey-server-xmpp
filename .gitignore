@@ -17,3 +17,7 @@ bin/
 .envrc
 
 coverage.out
+
+# build file
+
+prekey-server-xmpp
