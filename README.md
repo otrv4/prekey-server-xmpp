@@ -1,12 +1,13 @@
 # XMPP Prekey Server for OTRv4 and forward
 
 This project implements an XMPP Component (XEP-114) that allows XMPP server
-providers to deploy an OTRv4 Prekey Server
-(https://github.com/otrv4/otrv4-prekey-server) in an easy way.
+providers to deploy an [OTRv4 Prekey Server](https://github.com/otrv4/otrv4-prekey-server)
+in an easy way.
 
-In order to use this component, you also need to run the Raw prekey server (https://github.com/otrv4/otrng-prekey-server/tree/master/server/raw).
+In order to use this component, you also need to run the [Raw prekey server](https://github.com/otrv4/otrng-prekey-server/tree/master/server/raw).
 
-If you're using Prosody, you can add configuration options like these to add the server:
+If you're using Prosody, you can add configuration options like these to add the
+server:
 
 ```
 component_ports = { 42335 }
@@ -17,7 +18,7 @@ Component "prekeys.example.com"
         name = "OTR Prekey Server"
 ```
 
-You also need to add a DNS s2s entry for the domain you're using. 
+You also need to add a DNS s2s entry for the domain you're using.
 
 For ejabberd you can add an equivalent ejabberd_service.
 
